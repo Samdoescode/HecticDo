@@ -9,7 +9,7 @@ fn markdown(text: &str) -> Result<String, String> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, markdown])
+        .invoke_handler(tauri::generate_handler![ markdown])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 } //
