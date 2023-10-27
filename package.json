@@ -1,7 +1,7 @@
 {
-  "name": "HecticDo",
-  "version": "0.0.0",
-  "description": "",
+  "name": "PileUp",
+  "version": "0.0.1",
+  "description": "Super Simple Todo app that stresses you out",
   "scripts": {
     "start": "vite",
     "dev": "vite",

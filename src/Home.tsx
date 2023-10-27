@@ -1,10 +1,9 @@
-import { createSignal, Match, For, Switch, Show, createEffect, Index, children, onMount, Ref, onCleanup } from 'solid-js';
+import { createSignal, Match, For, Switch, createEffect,  onCleanup } from 'solid-js';
 import { appWindow, LogicalSize } from '@tauri-apps/api/window';
 import { createStore } from "solid-js/store"
 import MarkDownEditor from './markdwonEditor';
 
 export default function Home() {
-    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
 
 
 
