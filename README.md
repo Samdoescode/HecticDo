@@ -1,7 +1,6 @@
-# Tauri + Solid + Typescript
+# Hectic Do 
 
-This template should help get you started developing with Tauri, Solid and Typescript in Vite.
+Super simple todo app with pomodoro timer and scratch notes. 
 
-## Recommended IDE Setup
+built with Tauri
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
