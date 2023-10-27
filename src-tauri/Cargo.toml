@@ -2,7 +2,7 @@
 name = "HecticDo"
 version = "0.0.1"
 description = "A Tauri App"
-authors = "Sam Kennedy-Hine" 
+authors = ["Sam Kennedy-Hine"]
 license = ""
 repository = "https://github.com/Samdoescode/HecticDo"
 edition = "2021"
