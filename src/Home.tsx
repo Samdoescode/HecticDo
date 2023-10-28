@@ -1,21 +1,19 @@
-import { createSignal, Match, For, Switch, createEffect,  onCleanup } from 'solid-js';
+import { createSignal, Match, For, Switch, createEffect, onCleanup } from 'solid-js';
 import { appWindow, LogicalSize } from '@tauri-apps/api/window';
 import { createStore } from "solid-js/store"
 import MarkDownEditor from './markdwonEditor';
 
 export default function Home() {
 
-
-
     type task = { id: number, name: string, completed: boolean }
     type taskWrapper = { tasks: task[] }
     type timerWrapper = { clockSequence: number[] }
-    type uiStateWrapper = { notes: boolean, timer: boolean }
+    type uiStateWrapper = { notes: boolean, complete: boolean, timer: boolean }
     const [tasks, setTasks] = createStore<taskWrapper>({
         tasks: []
     })
     const [countdown, setCountdown] = createStore<timerWrapper>({ clockSequence: [] })
-    const [uiState, setUIState] = createStore<uiStateWrapper>({ notes: true, timer: false })
+    const [uiState, setUIState] = createStore<uiStateWrapper>({ notes: true, timer: false, complete: true })
     const [timerActive, setTimerActive] = createSignal(true)
     const RenderClock = (props: any) => {
         const [minutes, setminutes] = createSignal<number>(0)
@@ -33,7 +31,7 @@ export default function Home() {
 
         return (
             <>
-                <div class="flex m-4 flex-row">
+                <div class="flex m-4 flex-row border-none">
                     <div class="flex m-2 py-4 px-10 gap-4 flex-row dark:bg-gray-800 bg-gray-200 rounded-full ">
                         <div class="text-5xl  dark:text-gray-100 text-gray-900">{minutes()}</div>
                         <div class="text-5xl dark:text-gray-100 text-gray-900">:</div>
@@ -116,7 +114,7 @@ export default function Home() {
             }
         } else {
             if (darkMode()) {
-                red = 255 - (255 / Math.max(filter / 5, 1))+17
+                red = 255 - (255 / Math.max(filter / 5, 1)) + 17
                 green = 24
                 blue = 39
 
@@ -132,6 +130,7 @@ export default function Home() {
 
     const updateWindowSize = async (height: number | "current", width: number | "current", direction: "grow" | "shrink") => {
         // if (typeof height == "number" && typeof width == "number")
+
         const sizeOfWindow = await appWindow.innerSize()
         let calcdwidth: number
         if (typeof width == "number") {
@@ -139,7 +138,10 @@ export default function Home() {
         } else {
             calcdwidth = sizeOfWindow.width
         }
-        await appWindow.setSize(new LogicalSize(calcdwidth, sizeOfWindow.height))
+        await appWindow.setSize(new LogicalSize(calcdwidth, sizeOfWindow.height)).then(() => setUIState("complete", true))
+        console.log(uiState.notes)
+        console.log(uiState.complete)
+        console.log(uiState.notes && uiState.complete)
     }
     createEffect(() => {
         if (darkMode()) {
@@ -170,7 +172,7 @@ export default function Home() {
                             </span>
                         </button>
                         <button onclick={() => {
-                            setUIState("notes", !uiState.notes)
+                            setUIState({ notes: !uiState.notes, complete: false })
                             if (uiState.notes) {
                                 updateWindowSize("current", 510, "grow")
                             } else if (!uiState.notes) {
@@ -248,7 +250,7 @@ export default function Home() {
                     </div>
                 </div>
             </div >
-            <div class={`p-4 pl-12 ${uiState.notes ? "block" : "hidden"}  grow`}>
+            <div class={`p-4 pl-12 ${(uiState.notes && uiState.complete) ? "block" : "hidden"}  grow`}>
                 <MarkDownEditor />
             </div>
             <div class={`absolute  ${uiState.timer ? "block" : "hidden"} z-10 left-0 bottom-0`}>
