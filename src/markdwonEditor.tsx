@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api"
-import { children, onMount, For } from "solid-js"
+import { children, onMount, For, Show, createSignal, Switch, Match } from "solid-js"
 import { createStore } from "solid-js/store"
 
 export default function MarkDownEditor() {
@@ -47,7 +47,7 @@ export default function MarkDownEditor() {
     const updateToFocusedState = (i: number) => {
         editorText.HTMLElements[i].textContent = editorText.MarkdownText[i]
     }
-    
+
     const updateToUnfocusedState = (i: number) => {
         updateEditorText(i, editorText.MarkdownText[i])
     }
@@ -122,15 +122,47 @@ export default function MarkDownEditor() {
         return (
             props.props.line)
     }
+    const getTextSimp = async (text: string) => {
+        await invoke<string>("markdown", { text: text }).then(a => sethtmlStore(makeHTMLSimp(a)))
+    }
 
+    const makeHTMLSimp = (i: string) => document.createRange().createContextualFragment(i)
+    const [editorState, setEditorState] = createSignal(true)
+    const [textBuffer, settextBuffer] = createSignal<string>("...start taking notes")
+    const [htmlStore, sethtmlStore] = createSignal()
     return (
         <>
-            <TextEditorWrapped >
-                <For each={editorText.HTMLElements}>{(line) =>
-                    <LineInEditor props={{ line: line }} />
-                }
-                </For>
-            </TextEditorWrapped>
+            <div class="h-full flex flex-col">
+                <div class="flex gap-4 items-center justify-between mb-4">
+                    <h5 class="text-xl grow font-bold leading-none dark:text-gray-100 text-gray-900">Notes</h5>
+                    <Show when={editorState()} fallback={
+                        <button onclick={() => {
+                            setEditorState(true)
+                        }}>
+                            <span class="z-10 dark:text-gray-300  text-gray-700 material-symbols-outlined">
+                                edit
+                            </span>
+                        </button>
+                    }>
+                        <button onclick={() => {
+                            setEditorState(false)
+                            getTextSimp(textBuffer())
+                        }}>
+                            <span class="z-10 dark:text-gray-300 text-gray-700  material-symbols-outlined">
+                                sticky_note_2
+                            </span>
+                        </button>
+                    </Show>
+                </div>
+                <Switch>
+                    <Match when={editorState()}>
+                        <textarea value={textBuffer()} oninput={e => settextBuffer(e.target.value)} class="h-full prose dark:prose-invert w-full bg-gray-800 border-none rounded-md"></textarea>
+                    </Match>
+                    <Match when={!editorState()}>
+                        <div onclick={()=>setEditorState(true)} class="prose  dark:prose-invert">{htmlStore()}</div>
+                    </Match>
+                </Switch>
+            </div>
         </>
     )
 }

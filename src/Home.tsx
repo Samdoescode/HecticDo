@@ -2,6 +2,7 @@ import { createSignal, Match, For, Switch, createEffect, onCleanup } from 'solid
 import { appWindow, LogicalSize } from '@tauri-apps/api/window';
 import { createStore } from "solid-js/store"
 import MarkDownEditor from './markdwonEditor';
+import { TransitionGroup, Transition } from 'solid-transition-group';
 
 export default function Home() {
 
@@ -129,7 +130,6 @@ export default function Home() {
     let input: any
 
     const updateWindowSize = async (height: number | "current", width: number | "current", direction: "grow" | "shrink") => {
-        // if (typeof height == "number" && typeof width == "number")
 
         const sizeOfWindow = await appWindow.innerSize()
         let calcdwidth: number
@@ -155,12 +155,12 @@ export default function Home() {
             document.documentElement.classList.remove('dark')
         }
     })
-
+    
     return (
         <section class="bg-gray-100 text-gray-700 dark:text-gray-300 dark:bg-gray-900 flex h-screen gap-6 divide-gray-300 dark:divide-gray-700 divide-x-2 flex-row  p-8">
-            <div class='gap-4 grow max-w-md'>
+            <div class='gap-4  overflow-x-visible grow max-w-md'>
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-                <div class="w-full p-4">
+                <div class="w-full h-full overflow-x-visible flex flex-col p-4">
                     <div class="flex gap-4 items-center justify-between mb-4">
                         <h5 class="text-xl grow font-bold leading-none dark:text-gray-100 text-gray-900">Tasks</h5>
                         <button onclick={() => {
@@ -186,66 +186,78 @@ export default function Home() {
                             </span>
                         </button>
                     </div>
-                    <div class="">
-                        <ul role="list" class="divide-y dark:divide-gray-700  divide-gray-300">
-                            <For each={tasks.tasks} fallback={
-                                <li class="p-2 rounded-sm flex flex-row items-center">
-                                    <div class="flex">
-                                        <div class="flex-row items-center  border-0  flex mt-2 w-full  rounded-md gap-4">
-                                            <p class="block w-full pl-3 rounded-sm border-none py-1.5 dark:text-gray-100  text-gray-900">
-                                                Lets get this day started...
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center grow space-x-4">
-                                        <div class="flex-shrink-0">
-                                        </div>
-                                        <div class="flex-1 min-w-0 grow">
-                                        </div>
-                                    </div>
-                                </li>
-                            }>
-                                {(item) =>
-                                    <li style={{ "background": `rgba(${taskColour(item.completed)},1)` }} class="p-2 rounded-sm flex flex-row  items-center">
-                                        <div class="flex">
-                                            <div class="flex-row items-center  border-0  flex mt-2 w-full  rounded-md gap-4">
-                                                <button onclick={() => markComplete(item.id)} class="inset-y-0 left-0 flex items-center pl-3">
-                                                    <Switch>
-                                                        <Match when={item.completed}>
-                                                            <span class="material-symbols-outlined dark:text-gray-300  text-gray-700 sm:text-sm">
-                                                                done_all
-                                                            </span>
-                                                        </Match>
-                                                        <Match when={!item.completed}>
-                                                            <span class="material-symbols-outlined dark:text-gray-300  text-gray-700 sm:text-sm">
-                                                                done
-                                                            </span>
-                                                        </Match>
-                                                    </Switch>
-                                                </button>
-                                                <input ref={input} value={item.name}
-                                                    type="text" style={{ "background": `rgba(${taskColour(item.completed)},1)` }} class="block w-full rounded-sm border-none py-1.5 pl-7 pr-20 dark:text-gray-100 text-gray-900  ring-none ">
-                                                </input>
-                                                <div class="inset-y-0 right-0 flex items-center">
-                                                    <button onclick={() => deleteTask(item.id)}
-                                                        class="flex ">
-                                                        <span class="material-symbols-outlined  dark:text-gray-300  text-gray-700 sm:text-sm">
-                                                            backspace
-                                                        </span>
-                                                    </button>
+                    <div class="grow h-full  overflow-x-visible">
+                        <ul role="list" class="divide-y h-full dark:[color-scheme:dark]  dark:divide-gray-700 gap-2 overflow-y-auto overflow-x-visible px-2 divide-gray-300">
+                            <TransitionGroup name='taskAnimation'>
+                                <For each={tasks.tasks} fallback={
+                                        <li class=" animationTask rounded-sm flex pb-1 flex-row items-center">
+                                            <div class="flex">
+                                                <div class="flex-row items-center  border-0  flex mt-2 w-full  rounded-md gap-4">
+                                                    <p class="block w-full pl-3 rounded-sm border-none py-1.5 dark:text-gray-400 opacity-60  text-gray-600">
+                                                        Lets get this day started...
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="flex items-center grow space-x-4">
-                                            <div class="flex-shrink-0">
+                                            <div class="flex items-center grow space-x-4">
+                                                <div class="flex-shrink-0">
+                                                </div>
+                                                <div class="flex-1 min-w-0 grow">
+                                                </div>
                                             </div>
-                                            <div class="flex-1 min-w-0 grow">
+                                        </li>
+                                }>
+                                    {(item) =>
+                                        <li class='py-1 taskAnimation'>
+                                            <div style={{
+                                                "background": `rgba(${taskColour(item.completed)},1)`,
+                                                "animation-name": `${tasks.tasks.filter(i => !(i.completed)).length > 7 ?
+                                                    item.completed ? "" : tasks.tasks.filter(i => !(i.completed)).length > 14 ? "vibrate-very-fast" : "vibrate-fast" : ""}`,
+                                                "animation-delay": `${Math.floor(Math.random() * 2)}`,
+                                                "animation-duration": `${Math.max(Math.random() * (20 - tasks.tasks.filter(i => !(i.completed)).length), 1)}s`,
+                                                "animation-timing-function": "linear",
+                                                "animation-iteration-count": "infinite",
+                                                "animation-direction": "normal",
+                                                "animation-fill-mode": "none"
+                                            }} class="flex rounded-md  p-2 w-full h-full">
+                                                <div class="flex-row items-center  border-0  flex mt-2 w-full  rounded-md gap-4">
+                                                    <button onclick={() => markComplete(item.id)} class="inset-y-0 left-0 flex items-center pl-3">
+                                                        <Switch>
+                                                            <Match when={item.completed}>
+                                                                <span class="material-symbols-outlined dark:text-gray-300  text-gray-700 sm:text-sm">
+                                                                    done_all
+                                                                </span>
+                                                            </Match>
+                                                            <Match when={!item.completed}>
+                                                                <span class="material-symbols-outlined dark:text-gray-300  text-gray-700 sm:text-sm">
+                                                                    done
+                                                                </span>
+                                                            </Match>
+                                                        </Switch>
+                                                    </button>
+                                                    <input ref={input} value={item.name}
+                                                        type="text" style={{ "background": `rgba(${taskColour(item.completed)},1)` }} class="block w-full rounded-sm border-none py-1.5 pl-7 pr-20 dark:text-gray-100 text-gray-900  ring-none ">
+                                                    </input>
+                                                    <div class="inset-y-0 right-0 flex items-center">
+                                                        <button onclick={() => deleteTask(item.id)}
+                                                            class="flex ">
+                                                            <span class="material-symbols-outlined  dark:text-gray-300  text-gray-700 sm:text-sm">
+                                                                backspace
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                }
-                            </For>
+                                            <div class="flex items-center grow space-x-4">
+                                                <div class="flex-shrink-0">
+                                                </div>
+                                                <div class="flex-1 min-w-0 grow">
+                                                </div>
+                                            </div>
+                                        </li>
+                                    }
+                                </For>
                             <AddButton props={{ addTask: setTasks, tasks: tasks.tasks }} />
+                            </TransitionGroup>
                         </ul>
                     </div>
                 </div>
@@ -282,63 +294,72 @@ function AddButton(props: any) {
             setAddTaskOpen(!addTaskOpen())
         }
     }
+    createEffect(() => {
+        if (addTaskOpen()) {
+            setTimeout(() => input.focus(), 85)
+        }
+    })
+    const onEnter = (el: Element, done: VoidFunction) => {
+        const a = el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 80, easing: "ease" });
+        a.finished.then(done);
+    }
+    const onExit = (el: Element, done: VoidFunction) => {
+        const a = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 80, easing: "ease" });
+        a.finished.then(done);
+    }
     return (
-        <Switch fallback={<div></div>}>
-            <Match when={addTaskOpen() == true}>
-                <div class="h-full">
-                    <label for="small-input" class="hidden h-full text-sm font-medium dark:text-gray-100  text-gray-900">Small input</label>
-                    <div class="flex flex-row w-full h-full text-gray-900  dark:text-gray-100  gap-4 items-center">
-                        <div class="p-2 rounded-sm flex w-full flex-row items-center">
-                            <div class="flex w-full">
-                                <div class="flex-row items-center border-b-2  flex mt-2 w-full  rounded-md gap-4">
+    <div class="taskAnimation">
+        <Transition mode="outin" onEnter={onEnter} onExit={onExit}>
+            <Switch fallback={<div></div>}>
+                <Match when={addTaskOpen() == true}>
+                    <div class="h-full">
+                        <label for="small-input" class="hidden  h-full text-sm font-medium dark:text-gray-100  text-gray-900">Small input</label>
+                        <div class="flex flex-row w-full h-full text-gray-900   dark:text-gray-100  gap-4 items-center">
+                            <div class="py-2 flex w-full flex-row items-center">
+                                <div class="flex-row items-center border-b-2  flex mt-2 w-full gap-4">
                                     <span class="material-symbols-outlined dark:text-gray-300  text-gray-700 sm:text-sm  inset-y-0 left-0 flex items-center pl-3">
                                         east
                                     </span>
-                                    <input ref={input} onkeydown={(e) => handleEnter(e.key, input.value)}
-                                        type="text" class="block w-full rounded-sm border-none py-1.5 pl-4 pr-20 dark:bg-gray-900  dark:text-gray-100  text-gray-900 bg-gray-100  focus:ring-0 sm:text-sm sm:leading-6">
+                                    <input ref={input} onblur={() => setAddTaskOpen(false)} onkeydown={(e) => handleEnter(e.key, input.value)}
+                                        type="text" class="block w-full border-none py-1.5 pl-4  dark:bg-gray-900  dark:text-gray-100  text-gray-900 bg-gray-100  focus:ring-0 sm:text-sm sm:leading-6">
                                     </input>
-                                    <div class="inset-y-0 right-0 flex items-center">
-                                        <button onClick={() => {
-                                            if (!input.value.trim()) {
-                                                setAddTaskOpen(!addTaskOpen)
-                                                return
-                                            }
-                                            addTask(input.value);
-                                            setAddTaskOpen(!addTaskOpen())
-                                            input.focus()
-                                            input.value = "";
-                                        }}>
-                                            <span class="material-symbols-outlined  dark:text-gray-300  text-gray-700">
-                                                add_circle
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center grow space-x-4">
-                                <div class="flex-shrink-0">
-                                </div>
-                                <div class="flex-1 min-w-0 grow">
+                                    <button onClick={() => {
+                                        if (!input.value.trim()) {
+                                            setAddTaskOpen(!addTaskOpen)
+                                            return
+                                        }
+                                        addTask(input.value);
+                                        setAddTaskOpen(!addTaskOpen())
+
+                                        input.value = "";
+                                    }}>
+                                        <span class="material-symbols-outlined  dark:text-gray-300  text-gray-700">
+                                            add_circle
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </Match>
-            <Match when={addTaskOpen() == false}>
-                <div class='gap-2 h-full relative w-full grow flex p-4 my-2 border-dashed'>
-                    <button class='flex gap-2' onclick={() => setAddTaskOpen(!addTaskOpen())} >
-                        <span class=" material-symbols-outlined dark:text-gray-300  text-gray-700">
-                            add
-                        </span>
-                        <p class='z-10'>Add Task</p>
-                    </button>
-                    <div class="bg-red-300 absolute top-0 left-0 h-full" style={{
-                        "background": "linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%)"
-                    }}></div>
-                </div>
-            </Match>
-        </Switch >
+                </Match>
+                <Match when={addTaskOpen() == false}>
+                    <div class='gap-2 h-full relative w-full grow flex p-4 my-2 border-dashed'>
+                        <button class='flex gap-2' onclick={() =>
+                            setAddTaskOpen(!addTaskOpen())
+                        } >
+                            <span class=" material-symbols-outlined dark:text-gray-300  text-gray-700">
+                                add
+                            </span>
+                            <p class='z-10'>Add Task</p>
+                        </button>
+                        <div class="bg-red-300 absolute top-0 left-0 h-full" style={{
+                            "background": "linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%)"
+                        }}></div>
+                    </div>
+                </Match>
+            </Switch >
+        </Transition >
+        </div>
     )
 }
 
